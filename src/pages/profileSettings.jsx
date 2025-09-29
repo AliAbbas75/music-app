@@ -1,5 +1,6 @@
 import  { useState } from 'react';
 import { User, Lock, Bell, Palette, Trash2, Camera } from 'lucide-react';
+import avatarImg from "@/assets/avatar.png"
 
 const ProfileSettings = () => {
   const [name, setName] = useState('Value');
@@ -30,7 +31,7 @@ const ProfileSettings = () => {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <div className='flex w-full h-full'><img src="src/assets/avatar.png" alt="" /></div>
+                    <div className='flex w-full h-full'><img src= {avatarImg} alt="" /></div>
                   </div>
                   <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
                     <Camera className="h-3 w-3" />

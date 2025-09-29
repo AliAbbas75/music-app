@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { BookMarkedIcon, ClockIcon, CpuIcon, HouseWifiIcon, MusicIcon, StarsIcon, User2Icon, ZapIcon } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import appLogo from "@/assets/359 1.png"
 
 
 // This is sample data.
@@ -48,7 +49,7 @@ export function AppSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader className={'h-20'}>
-        <div className="flex object-cover w-full h-full items-center gap-2"><img src="src/assets/359 1.png" alt="" /><p className=" font-bold text-lg">Logo</p></div>
+        <div className="flex object-cover w-full h-full items-center gap-2"><img src={appLogo} alt="" /><p className=" font-bold text-lg">Logo</p></div>
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((group) => (

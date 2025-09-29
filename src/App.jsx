@@ -20,6 +20,7 @@ import LoginPage from "./pages/loginPage";
 import { BellIcon, ChevronDown, User2Icon } from "lucide-react";
 import ProfileSettings from "./pages/profileSettings";
 import Notifications from "./pages/profileNotifications";
+import avatarImg from "@/assets/Ellipse 22.png"
 // Layout with Sidebar
 function AppLayout() {
   return (
@@ -30,7 +31,7 @@ function AppLayout() {
           <SidebarTrigger />
           <SearchForm className=" me-auto flex w-[60%] h-full items-center py-5" />
           <div className="size-10 rounded-full bg-white border flex items-center justify-center"><BellIcon className="text-muted-foreground" /></div>
-          <div className="h-10 rounded-full bg-white border flex items-center p-2 gap-2 justify-evenly"><img src="src/assets/Ellipse 22.png" /><p>Account</p> <ChevronDown className="text-muted-foreground size-3" /></div>
+          <div className="h-10 rounded-full bg-white border flex items-center p-2 gap-2 justify-evenly"><img src={avatarImg} /><p>Account</p> <ChevronDown className="text-muted-foreground size-3" /></div>
         </header>
 
         <Routes>

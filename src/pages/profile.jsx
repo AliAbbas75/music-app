@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { UserIcon, LockIcon, BellIcon, PaletteIcon, Trash2Icon, UploadIcon } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 
