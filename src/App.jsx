@@ -35,6 +35,7 @@ function AppLayout() {
         </header>
 
         <Routes>
+          <Route path="/" element={<Dashboard/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/songs" element={<SongsLibrary />} />
           <Route path="/airemix" element={<AIRemixGenerator />} />
