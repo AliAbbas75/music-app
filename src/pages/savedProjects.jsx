@@ -44,14 +44,14 @@ const SavedRemixesProjects = () => {
     <div className="m-4 px-10 py-2">
       <div className="">
         {/* Header */}
-        <h1 className="text-2xl font-semibold text-gray-900 mb-8">Saved Remixes / Projects</h1>
+        <h1 className="text-2xl font-semibold text-muted-foreground mb-8">Saved Remixes / Projects</h1>
         
         {/* Projects List */}
         <div className="space-y-4">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="flex items-center space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer group"
+              className="flex items-center space-x-4 p-4 text-muted-foreground hover:text-black rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer group"
             >
               {/* Album Cover */}
               <div className={`w-14 h-14 rounded-xl ${project.cover} flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200 flex-shrink-0`}>
@@ -62,10 +62,10 @@ const SavedRemixesProjects = () => {
               
               {/* Project Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-medium text-gray-900 truncate">
+                <h3 className="text-base font-medium truncate">
                   {project.title}
                 </h3>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-muted-foreground truncate">
                   {project.artist}
                 </p>
               </div>

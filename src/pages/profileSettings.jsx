@@ -1,56 +1,132 @@
-import  { useState } from 'react';
-import { User, Lock, Bell, Palette, Trash2, Camera } from 'lucide-react';
-import avatarImg from "@/assets/avatar.png"
+import { useState } from 'react';
+import { Camera, User as UserIcon } from 'lucide-react';
+import API from "@/api"; // axios instance
+import useAuthStore from "@/store/authStore";
 
 const ProfileSettings = () => {
-  const [name, setName] = useState('Value');
-  const [email, setEmail] = useState('mail@gmail.com');
+  const { user, setUser } = useAuthStore(); // user + updater from store
 
-  const sidebarItems = [
-    { id: 'profile', icon: User, label: 'Profile', active: true },
-    { id: 'password', icon: Lock, label: 'Password', active: false },
-    { id: 'notifications', icon: Bell, label: 'Notifications', active: false },
-    { id: 'appearance', icon: Palette, label: 'Appearance', active: false }
-  ];
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file)); // local preview
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!imageFile) return alert("Please select an image first.");
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("profileImage", imageFile);
+
+    try {
+      const { data } = await API.post("/user/upload-profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+
+      // ✅ update Zustand user with new image URL
+      setUser({
+        ...user,
+        profileImage: data.profileImage,
+      });
+
+
+      setPreview(null);
+      setImageFile(null);
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading image");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-
-      {/* Main Content */}
+    <div className="min-h-screen bg-background flex">
       <div className="flex-1 p-8">
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-8">Profile</h2>
+          <h2 className="text-2xl font-semibold text-accent-foreground mb-8">Profile</h2>
 
           <div className="space-y-6">
             {/* Avatar Section */}
+            {console.log(user.profileImage)}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-accent-foreground mb-3">
                 Avatar
               </label>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <div className='flex w-full h-full'><img src= {avatarImg} alt="" /></div>
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-foreground bg-background flex items-center justify-center">
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : user?.profileImage ? (
+                      <img
+                        src={`${user?.profileImage?.url || "/default.jpg"}`}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-8 w-8 text-gray-400" />
+                    )}
                   </div>
-                  <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                  <label
+                    htmlFor="file-upload"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 cursor-pointer"
+                  >
                     <Camera className="h-3 w-3" />
-                  </button>
+                  </label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
                 </div>
+
                 <div>
-                  <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                    Upload new image
+                  {preview && (
+                    <div className="mt-2">
+                      <p className="text-xs text-accent-foreground">Preview:</p>
+                      <img
+                        src={preview}
+                        alt="preview"
+                        width={150}
+                        className="rounded border mt-1"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleUpload}
+                    disabled={loading || !imageFile}
+                    className="bg-blue-500 text-white px-4 py-2 mt-2 rounded disabled:opacity-50"
+                  >
+                    {loading ? "Uploading..." : "Upload"}
                   </button>
-                  <p className="text-xs text-gray-500 mt-1">
-                    At least 800x800 px recommended. JPG or PNG and GIF is allowed.
-                  </p>
                 </div>
               </div>
+              <p className="text-xs text-accent-foreground mt-1">
+                At least 800x800 px recommended. JPG, PNG, or GIF allowed.
+              </p>
             </div>
 
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-accent-foreground mb-2">
                 Name
               </label>
               <input
@@ -63,14 +139,14 @@ const ProfileSettings = () => {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-accent-foreground mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-background cursor-not-allowed"
               />
             </div>
 

@@ -4,31 +4,51 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { login } from "@/services/authService" // your axios login call
+import { signup } from "@/services/authService" // ✅ use signup instead of register
 import useAuthStore from "@/store/authStore"
 import { Link, useNavigate } from "react-router-dom"
 
-export function LoginForm({ className, ...props }) {
+export function RegisterForm({ className, ...props }) {
+  // Form state
+  const [username, setUsername] = useState("") // ✅ renamed from name → username
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
-
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
+    // ✅ Client-side validation before API call
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setLoading(false)
+      return
+    }
+
+    if (password.length < 1) {
+      setError("Password must be at least 1 characters")
+      setLoading(false)
+      return
+    }
+
     try {
-      const data = await login({ email, password }) // backend call
-      useAuthStore.getState().login(data.user, data.token) // ✅ save user+token
-      console.log("Login success:", data)
-      navigate("/dashboard")
-      
+        console.log("Registering User\n", "Email: ",email, "\n", "Password: ",password )
+      // ✅ Call backend signup endpoint
+      const data = await signup({ username, email, password })
+
+      // ✅ Save user+token in Zustand (already persists to localStorage)
+      useAuthStore.getState().login(data.user, data.token)
+
+      console.log("Registration success:", data)
+      navigate("/dashboard") // redirect after success
     } catch (err) {
-      setError(err.response?.data?.msg || "Login failed")
+      // ✅ Match backend error field "msg"
+      setError(err.response?.data?.msg || "Registration failed")
     } finally {
       setLoading(false)
     }
@@ -42,9 +62,9 @@ export function LoginForm({ className, ...props }) {
             <div className="flex flex-col gap-6">
               {/* Title */}
               <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="text-2xl font-bold">Create an account</h1>
                 <p className="text-muted-foreground text-balance">
-                  Login to your Acme Inc account
+                  Sign up for your Acme Inc account
                 </p>
               </div>
 
@@ -52,6 +72,19 @@ export function LoginForm({ className, ...props }) {
               {error && (
                 <p className="text-red-500 text-sm text-center">{error}</p>
               )}
+
+              {/* Username */}
+              <div className="grid gap-3">
+                <Label htmlFor="username">Full Name</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="John Doe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
 
               {/* Email */}
               <div className="grid gap-3">
@@ -68,27 +101,33 @@ export function LoginForm({ className, ...props }) {
 
               {/* Password */}
               <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to={"/forgot-password"}
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="password"
+                  type="text"
+                  placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
+              {/* Confirm Password */}
+              <div className="grid gap-3">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="text"
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+
               {/* Submit */}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
+                {loading ? "Creating account..." : "Sign up"}
               </Button>
 
               {/* Divider */}
@@ -98,7 +137,7 @@ export function LoginForm({ className, ...props }) {
                 </span>
               </div>
 
-              {/* Social logins (still static for now) */}
+              {/* Social logins (stub) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Button variant="outline" type="button" className="w-full">
                   Apple
@@ -111,17 +150,18 @@ export function LoginForm({ className, ...props }) {
                 </Button>
               </div>
 
-              {/* Sign up link */}
+              {/* Login link */}
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link to={"/register"} className="underline underline-offset-4">
-                  Sign up
+                Already have an account?{" "}
+                <Link to="/login" className="underline underline-offset-4">
+                  Login
                 </Link>
               </div>
             </div>
           </form>
         </div>
 
+        {/* Footer */}
         <div className="items-center justify-center align-middle text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
           <p>
             By clicking continue, you agree to our{" "}

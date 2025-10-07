@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UserIcon, LockIcon, BellIcon, PaletteIcon, Trash2Icon, UploadIcon } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
+import useThemeStore from '@/store/themeStore';
 
 const Profile = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('mail@gmail.com');
     const [activeTab, setActiveTab] = useState('profile');
+    const theme = useThemeStore(state => state.theme)
+    const [pageTheme, setTheme] = useState(theme);
+
+    useEffect(() => {
+        setTheme(theme);
+    }, [theme])
 
     const navigationItems = [
         { id: 'profile', label: 'Profile', icon: <UserIcon />, active: true, url: "/profile" },
@@ -15,21 +22,22 @@ const Profile = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-background flex">
+            {console.log("Current theme: ", pageTheme)}
             {/* Sidebar */}
-            <div className="w-64 bg-white min-h-screen p-6">
-                <h1 className="text-xl font-semibold text-gray-900 mb-8">Profile</h1>
+            <div className="w-64 bg-background min-h-screen p-6">
+                <h1 className="text-xl font-semibold text-accent-foreground mb-8">Profile</h1>
 
                 <nav className="space-y-2">
                     {navigationItems.map((item) => (
                         <NavLink
-                            key={item.title}
+                            key={item.label}
                             to={item.url}
                             end // use end here so each link is active only on its exact URL
                             className={({ isActive }) =>
                                 `flex items-center gap-3 h-12 px-4 rounded-md transition-colors ${isActive
-                                    ? "bg-blue-500 text-white"
-                                    : "text-gray-700 hover:bg-gray-100"
+                                    ? `bg-blue-500 ${pageTheme === "light" ? "text-white" : "text-accent-foreground"}`
+                                    : "text-accent-foreground hover:bg-gray-100 hover:text-black"
                                 }`
                             }
                         >

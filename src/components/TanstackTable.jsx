@@ -159,9 +159,9 @@ const DataTable = ({ data, columns, actions, rowSelection = {}, setRowSelection,
 
             </div>
 
-            <div className="w-full overflow-hidden">
+            <div className="w-full overflow-hidden rounded-lg">
                 <Table className={"table-fixed overflow-x-auto"}>
-                    <TableHeader className="bg-gray-100">
+                    <TableHeader className="bg-background">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
@@ -281,7 +281,7 @@ const DataTable = ({ data, columns, actions, rowSelection = {}, setRowSelection,
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Show</span>
                         <select
-                            className="border border-gray-300 rounded px-3 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="border border-gray-300 rounded px-3 py-1 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={table.getState().pagination.pageSize}
                             onChange={(e) => table.setPageSize(Number(e.target.value))}
                         >

@@ -51,7 +51,7 @@ const SongsLibrary = () => {
         <div className="min-h-screen  px-10 py-2">
             {/* Header */}
             <Card className={"my-4 px-2"}>
-                <h1 className="text-2xl font-semibold text-gray-900">Song Library</h1>
+                <h1 className="text-2xl font-semibold text-accent-foreground">Song Library</h1>
             </Card>
             <div className="w-full px-4">
 
@@ -62,7 +62,7 @@ const SongsLibrary = () => {
                             key={tab.id}
                             className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${tab.active
                                     ? 'bg-blue-600 text-white shadow-sm'
-                                    : 'bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                    : 'bg-muted text-accent-foreground hover:text-gray-900 hover:bg-gray-100'
                                 }`}
                         >
                             {tab.label}
@@ -71,11 +71,11 @@ const SongsLibrary = () => {
                 </div>
 
                 {/* Song List */}
-                <div className="space-y-3">
+                <div className="space-y-3 text-muted-foreground">
                     {songs.map((song) => (
                         <div
                             key={song.id}
-                            className="flex items-center space-x-4 p-3 bg-white rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer group"
+                            className="flex items-center space-x-4 p-3 bg-background rounded-xl transition-colors hover:text-neutral-900 hover:bg-gray-200 duration-200 cursor-pointer group"
                         >
                             {/* Album Cover */}
                             <div className={`w-12 h-12 rounded-xl ${song.cover} flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200`}>
@@ -86,10 +86,10 @@ const SongsLibrary = () => {
 
                             {/* Song Info */}
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-base font-medium text-gray-900 truncate">
+                                <h3 className="text-base font-medium truncate">
                                     {song.title}
                                 </h3>
-                                <p className="text-sm text-gray-500 truncate">
+                                <p className="text-sm text-muted-foreground truncate">
                                     {song.artist}
                                 </p>
                             </div>

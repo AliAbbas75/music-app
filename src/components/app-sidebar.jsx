@@ -14,6 +14,8 @@ import {
 import { BookMarkedIcon, ClockIcon, CpuIcon, HouseWifiIcon, MusicIcon, StarsIcon, User2Icon, ZapIcon } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import appLogo from "@/assets/359 1.png"
+import useThemeStore from "@/store/themeStore";
+import { useEffect, useState } from "react";
 
 
 // This is sample data.
@@ -45,7 +47,10 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
+  const theme = useThemeStore().theme
+  const [pageTheme, setTheme] = useState(theme)
   const location = useLocation();
+  useEffect(() => setTheme(theme), [theme])
   return (
     <Sidebar {...props}>
       <SidebarHeader className={'h-20'}>
@@ -112,7 +117,7 @@ export function AppSidebar({
           </SidebarGroup>
         ))}
         <SidebarFooter>
-          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+          <div className={`p-4 rounded-2xl border ${pageTheme === "light" ? "bg-background border-blue-100" : "bg-muted border-gray-500"}`}>
             {/* Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-blue-100">
@@ -125,8 +130,8 @@ export function AppSidebar({
               <h3 className="text-blue-400 font-semibold text-base">
                 New Feature
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Unlock <span className="font-medium text-gray-900">New Features</span>
+              <p className={`text-sm leading-relaxed ${pageTheme === "light" ? "text-gray-700":"text-muted-foreground"}`}>
+                Unlock <span className={`font-medium ${pageTheme === "light" ? "text-gray-900":"text-sky-600"}`}>New Features</span>
               </p>
             </div>
 

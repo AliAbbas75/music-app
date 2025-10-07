@@ -68,7 +68,7 @@
 
   --accent: oklch(0.97 0.04 262);
   /* hsl(216 85% 95%) */
-  --accent-foreground: oklch(0.55 0.24 262);
+  --accent-foreground: oklch(25.197% 0.00003 271.152);
 
   --destructive: oklch(0.62 0.25 25);
   /* hsl(0 84% 60%) */
@@ -145,6 +145,32 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Base scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 9999px; /* full rounded */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-foreground);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--muted);
+}
+
 
 @layer base {
   * {

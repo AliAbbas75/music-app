@@ -345,13 +345,10 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Welcome back DJ Nova! 🎧</h1>
 
           <div className="flex flex-wrap gap-2">
-            <Button className="bg-white h-14 rounded-full border-2 text-lg text-black">
-              Explore Remixes 🔍
-            </Button>
-            <Button className="bg-white h-14 rounded-full border-2 text-lg text-black">
+            <Button className="bg-background h-14 rounded-full border-2 text-lg text-accent-foreground">
               Import Song ⬇️
             </Button>
-            <Button className="h-14 rounded-full text-lg">
+            <Button className="h-14 rounded-full text-lg text-accent-foreground bg-background">
               New Remix ➡️
             </Button>
           </div>
