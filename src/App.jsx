@@ -28,6 +28,7 @@ import ResetPasswordPage from "./components/ResetPassword";
 import RegisterPage from "./pages/registerPage";
 import ThemeToggle from "./components/themeToggle";
 import useThemeStore from "./store/themeStore";
+import useAudioStore from "./store/audioStore";
 import { useEffect } from "react";
 // Layout with Sidebar
 function AppLayout() {
@@ -41,7 +42,7 @@ function AppLayout() {
           <div className="size-10 rounded-full bg-background border flex items-center justify-center"><BellIcon className="text-muted-foreground" /></div>
           <div className="h-10 rounded-full bg-background border flex items-center p-2 gap-2 justify-evenly"><img src={avatarImg} /><p>Account</p> <ChevronDown className="text-muted-foreground size-3" /></div>
           <SignOutButton />
-          <ThemeToggle/>
+          <ThemeToggle />
         </header>
 
         <Routes>
@@ -68,6 +69,13 @@ function AppLayout() {
 // Top-level routing
 export default function App() {
   const { theme, setTheme } = useThemeStore()
+  const { setAudioFile, setIsPlaying } = useAudioStore();
+
+  useEffect(() => {
+    // Clear non-serializable file data on reload
+    setAudioFile(null);
+    setIsPlaying(false);
+  }, [setAudioFile, setIsPlaying]);
 
   // when app mounts, apply stored theme
   useEffect(() => {
