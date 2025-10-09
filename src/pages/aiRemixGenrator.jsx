@@ -39,6 +39,7 @@ const AIRemixGenerator = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) setAudioFile(file);
+    console.log("Uploaded File: ", file);
   };
 
   return (
