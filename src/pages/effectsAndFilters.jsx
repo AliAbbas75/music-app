@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
 import AudioProcessor from "@/components/AudioProcessor"; // adjust import path
 import API from "@/api";
+import SuccessModal from "@/components/SuccessModal";
+import { useState } from "react";
 
 const RemixWorkspace = () => {
   const {
@@ -39,104 +41,96 @@ const RemixWorkspace = () => {
     { id: "autotune", label: "Auto-Tune" },
     { id: "lowpass", label: "Low-Pass Filter" },
   ];
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-// In effectsAndFilters.jsx (RemixWorkspace)
-const handleApply = async () => {
-  try {
-    const { audioFile, audioBuffer, bpm } = useAudioStore.getState();
-    
-    // Validate audio file existence
-    if (!audioFile) {
-      alert("Please select an audio file in the AI Remix Generator page first");
-      return;
+
+  // In effectsAndFilters.jsx (RemixWorkspace)
+  const handleApply = async () => {
+    try {
+      const { audioFile, audioBuffer, bpm } = useAudioStore.getState();
+
+      // Validate audio file existence
+      if (!audioFile) {
+        alert("Please select an audio file in the AI Remix Generator page first");
+        return;
+      }
+
+      // Validate audio buffer (processed audio)
+      if (!audioBuffer) {
+        alert("Please wait for the audio to be processed before applying effects");
+        return;
+      }
+
+      // Validate export handler
+      if (!exportHandler) {
+        alert("Audio processor is not ready. Please ensure the audio is loaded correctly");
+        return;
+      }
+
+      // Generate the remix file
+      const remixFile = await exportHandler();
+      if (!remixFile) {
+        alert("Failed to generate remix file. Please try again");
+        return;
+      }
+
+      // Create and validate FormData
+      const formData = new FormData();
+
+      console.log("File in Effects page after apply click: ", remixFile)
+      // Ensure the File object is properly created and added
+      if (!(remixFile instanceof File)) {
+        throw new Error("Invalid remix file format");
+      }
+
+      // Log the file details before append
+      console.log("File to upload:", {
+        name: remixFile.name,
+        type: remixFile.type,
+        size: remixFile.size
+      });
+
+      // Append file with explicit filename
+      formData.append("audio", remixFile, remixFile.name);
+      formData.append("isRemix", "true");
+      formData.append("bpm", bpm?.toString() || "120");
+
+      // Log FormData contents
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      // Remove Content-Type header - let the browser set it with the boundary
+      const res = await API.post("/audio/upload", formData, {
+        headers: {
+          // Remove Content-Type header to let browser set it with boundary
+        },
+      });
+
+      if (!res.data) {
+        throw new Error("No response data from server");
+      }
+
+      console.log("✅ Remix uploaded:", res.data);
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("❌ Remix upload failed:", err);
+      // Log detailed error information
+      if (err.response) {
+        console.error("Response data:", err.response.data);
+        console.error("Response status:", err.response.status);
+        console.error("Response headers:", err.response.headers);
+      }
+
+      // Show appropriate error message
+      if (err.response?.data?.msg) {
+        alert(`Upload failed: ${err.response.data.msg}`);
+      } else {
+        alert("Upload failed. Please ensure you have selected an audio file and applied effects before uploading.");
+      }
     }
+  };
 
-    // Validate audio buffer (processed audio)
-    if (!audioBuffer) {
-      alert("Please wait for the audio to be processed before applying effects");
-      return;
-    }
-
-    // Validate export handler
-    if (!exportHandler) {
-      alert("Audio processor is not ready. Please ensure the audio is loaded correctly");
-      return;
-    }
-
-    // Generate the remix file
-    const remixFile = await exportHandler();
-    if (!remixFile) {
-      alert("Failed to generate remix file. Please try again");
-      return;
-    }
-
-    // Create and validate FormData
-    const formData = new FormData();
-    
-    console.log("File in Effects page after apply click: ", remixFile)
-    // Ensure the File object is properly created and added
-    if (!(remixFile instanceof File)) {
-      throw new Error("Invalid remix file format");
-    }
-    
-    // Log the file details before append
-    console.log("File to upload:", {
-      name: remixFile.name,
-      type: remixFile.type,
-      size: remixFile.size
-    });
-
-    // Append file with explicit filename
-    formData.append("audio", remixFile, remixFile.name);
-    formData.append("isRemix", "true");
-    formData.append("bpm", bpm?.toString() || "120");
-
-    // Log FormData contents
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
-    // Remove Content-Type header - let the browser set it with the boundary
-    const res = await API.post("/audio/upload", formData, {
-      headers: {
-        // Remove Content-Type header to let browser set it with boundary
-      },
-    });
-    
-    if (!res.data) {
-      throw new Error("No response data from server");
-    }
-
-    console.log("✅ Remix uploaded:", res.data);
-    alert("Remix successfully uploaded!");
-  } catch (err) {
-    console.error("❌ Remix upload failed:", err);
-    // Log detailed error information
-    if (err.response) {
-      console.error("Response data:", err.response.data);
-      console.error("Response status:", err.response.status);
-      console.error("Response headers:", err.response.headers);
-    }
-    
-    // Show appropriate error message
-    if (err.response?.data?.msg) {
-      alert(`Upload failed: ${err.response.data.msg}`);
-    } else {
-      alert("Upload failed. Please ensure you have selected an audio file and applied effects before uploading.");
-    }
-  }
-};
-
-
-  // ──────────────────────────────────────────────
-  // Toggle effect in Zustand store
-  // const toggleEffect = (effectId) => {
-  //   setEffects((prev) =>
-  //     prev.includes(effectId)
-  //       ? prev.filter((e) => e !== effectId)
-  //       : [...prev, effectId]
-  //   );
-  // };
 
   return (
     <div className="m-4 px-10 py-2">
@@ -176,24 +170,6 @@ const handleApply = async () => {
               Effects & Filters
             </h2>
             <div className="flex flex-wrap gap-2">
-              {/* {effectOptions.map((effect) => {
-                const activeEffects = Array.isArray(effects) ? effects : [];
-                const isActive = activeEffects.includes(effect.id);
-
-                return (
-                  <button
-                    key={effect.id}
-                    onClick={() => toggleEffect(effect.id)}
-                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-muted text-muted-foreground border hover:border-gray-300 hover:bg-gray-50"
-                      }`}
-                  >
-                    {effect.label}
-                  </button>
-                );
-              })} */}
-
               {effectOptions.map((effect) => (
                 <button
                   key={effect.id}
@@ -225,11 +201,23 @@ const handleApply = async () => {
               <X className="h-4 w-4 inline" />
               <span>Clear</span>
             </Button>
-            <Button onClick={handleApply} className="bg-blue-600 text-white max-w-40 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 p-4">
+
+            <Button
+              onClick={handleApply}
+              className="bg-blue-600 text-white max-w-40 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 p-4"
+            >
               <Sparkles className="h-4 w-4" />
               <span>Apply</span>
             </Button>
           </div>
+
+          {/* Success Modal */}
+          {showSuccessModal && (
+            <SuccessModal
+              onClose={() => setShowSuccessModal(false)}
+            />
+          )}
+
         </div>
       </div>
     </div>
