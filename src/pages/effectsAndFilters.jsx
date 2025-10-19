@@ -2,7 +2,7 @@ import { ChevronDown, Sparkles, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
-import AudioProcessor from "@/components/AudioProcessor"; // adjust import path
+import AudioProcessor from "@/components/audioProcessor"; // adjust import path
 import API from "@/api";
 import SuccessModal from "@/components/SuccessModal";
 import { useState } from "react";
