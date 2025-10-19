@@ -23,16 +23,18 @@ export default function LoginPage() {
 
     // Normal login layout
     return (
-        <div className="grid grid-cols-2 w-full h-screen overflow-hidden">
-            <div className="flex items-center justify-center w-full">
-                <img
-                    className="w-full h-full object-cover"
-                    src="src/assets/Photo.png"
-                    alt="img"
-                />
-            </div>
-            <div className="flex items-center justify-center w-full">
-                <LoginForm />
+        <div className=" flex">
+            <div className="grid grid-cols-2 w-full h-screen">
+                <div className="flex items-center justify-center w-full h-full ">
+                    <img
+                        className="w-full h-full object-cover"
+                        src="src/assets/Onboarding.png"
+                        alt="img"
+                    />
+                </div>
+                <div className="flex items-center justify-center w-full h-full">
+                    <LoginForm />
+                </div>
             </div>
         </div>
     )

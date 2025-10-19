@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { ChevronDown, Music, Sparkles, X } from "lucide-react";
+import { ChevronDown, Music, Sparkles, X, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
+import API from "@/api"; // ✅ axios instance with auth headers
+import ProcessingModal from "@/components/processingModal";
 
 const AIRemixGenerator = () => {
   const {
-    setAudioFile,
     setTitle,
     setDescription,
     setSelectedCategory,
@@ -17,7 +18,14 @@ const AIRemixGenerator = () => {
     selectedCategory,
     selectedStyles,
     clearAudioSession,
+    uploadedAudio
   } = useAudioStore();
+
+  const [loading, setLoading] = useState(false);
+  const [creatingRemix, setCreatingRemix] = useState(false);
+  const setAudioFile = useAudioStore((state) => state.setAudioFile);
+  const setUploadedAudio = useAudioStore((state) => state.setUploadedAudio);
+  const [completed, setCompleted] = useState(false);
 
   const styleOptions = [
     { id: "edm", label: "EDM" },
@@ -35,13 +43,80 @@ const AIRemixGenerator = () => {
     "World Music",
   ];
 
-  // Handle file input
-  const handleFileChange = (e) => {
+  // ─── File Change ──────────────────────────────────────────────
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) setAudioFile(file);
-    console.log("Uploaded File: ", file);
+    if (!file) return;
+
+    // ✅ Update store with local file reference (for waveform, playback, etc.)
+    setAudioFile(file);
+
+    // Reset input so the same file can be re-uploaded
+    e.target.value = "";
+
+    // Log details
+    console.log("🎵 Selected file:", { name: file.name, type: file.type, size: file.size });
+
+    // ✅ Upload to backend
+    try {
+      const formData = new FormData();
+      formData.append("audio", file);
+
+      const res = await API.post("/audio/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("✅ Upload success:", res.data.audio);
+
+      // ✅ Save backend info (fileId, path, etc.)
+      setUploadedAudio(res.data);
+    } catch (err) {
+      console.error("❌ Upload failed:", err);
+      alert("Upload failed. Check backend logs.");
+    }
   };
 
+  // ─── Create Remix ─────────────────────────────────────────────
+
+  const handleCreateRemix = async () => {
+    try {
+      if (!uploadedAudio?.audio.id) {
+        alert("Please upload the song first before remixing.");
+        return;
+      }
+      if (!selectedStyles.length) {
+        alert("Please select a remix style.");
+        return;
+      }
+
+      const style = selectedStyles[0];
+      const fileId = uploadedAudio.audio.id;
+
+      setCreatingRemix(true);
+      setCompleted(false);
+
+      console.log(`🎵 Starting remix for fileId=${fileId}, style=${style}`);
+
+      // ✅ Send title in request body
+      const res = await API.post(
+        `/audio/${fileId}/remix`,
+        { title }, // 👈 send in body
+        { params: { style } } // still send style as query param
+      );
+
+      console.log("✅ Remix created:", res.data);
+
+      // mark as complete to trigger modal transition + redirect
+      setCompleted(true);
+    } catch (error) {
+      console.error("❌ Remix creation failed:", error);
+      alert("Remix creation failed. Check console for details.");
+      setCreatingRemix(false);
+    }
+  };
+
+
+  // ─── Render ──────────────────────────────────────────────────
   return (
     <div className="px-10 py-2 m-4">
       <div className="w-full">
@@ -84,11 +159,10 @@ const AIRemixGenerator = () => {
                         : [...selectedStyles, style.label]
                     )
                   }
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedStyles.includes(style.label)
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${selectedStyles.includes(style.label)
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   {style.label}
                 </button>
@@ -166,17 +240,33 @@ const AIRemixGenerator = () => {
             <Button
               onClick={clearAudioSession}
               className="bg-muted text-muted-foreground border rounded-full hover:text-gray-800 font-medium transition-colors gap-2 p-4"
+              disabled={loading}
             >
               <X className="h-4 w-4 inline" />
               <span>Clear</span>
             </Button>
             <Button
+              onClick={handleCreateRemix}
+              disabled={loading}
               className="bg-blue-600 text-white max-w-40 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 p-4"
             >
-              <Sparkles className="h-4 w-4" />
-              <span>Create</span>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  <span>Create</span>
+                </>
+              )}
             </Button>
           </div>
+
+          {creatingRemix && (
+            <ProcessingModal completed={completed} />
+          )}
         </div>
       </div>
     </div>

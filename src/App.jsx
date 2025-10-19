@@ -21,7 +21,6 @@ import LoginPage from "./pages/loginPage";
 import { BellIcon, ChevronDown, User2Icon } from "lucide-react";
 import ProfileSettings from "./pages/profileSettings";
 import Notifications from "./pages/profileNotifications";
-import avatarImg from "@/assets/Ellipse 22.png"
 import SignOutButton from "./components/SignOutButton";
 import ForgotPasswordPage from "./components/ForgotPassword";
 import ResetPasswordPage from "./components/ResetPassword";
@@ -30,6 +29,8 @@ import ThemeToggle from "./components/themeToggle";
 import useThemeStore from "./store/themeStore";
 import useAudioStore from "./store/audioStore";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import AccountDropdown from "./components/accountDropdown";
 // Layout with Sidebar
 function AppLayout() {
   return (
@@ -39,8 +40,10 @@ function AppLayout() {
         <header className="flex h-20 bg-background items-center gap-2 border-b px-4 shadow-2xl w-full justify-between">
           <SidebarTrigger />
           <SearchForm className=" me-auto flex w-[60%] h-full items-center py-5" />
-          <div className="size-10 rounded-full bg-background border flex items-center justify-center"><BellIcon className="text-muted-foreground" /></div>
-          <div className="h-10 rounded-full bg-background border flex items-center p-2 gap-2 justify-evenly"><img src={avatarImg} /><p>Account</p> <ChevronDown className="text-muted-foreground size-3" /></div>
+          <Link to={"/profile/notifications"}>
+            <div className="size-10 rounded-full bg-background border flex items-center justify-center"><BellIcon className="text-muted-foreground" /></div>
+          </Link>
+          <AccountDropdown/>
           <SignOutButton />
           <ThemeToggle />
         </header>

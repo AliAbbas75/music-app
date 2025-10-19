@@ -33,7 +33,6 @@ const ProfileSettings = () => {
         withCredentials: true,
       });
 
-      // ✅ update Zustand user with new image URL
       setUser({
         ...user,
         profileImage: data.profileImage,
