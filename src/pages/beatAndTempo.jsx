@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { ChevronDown, X, Music } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
 
 const BeatTempoControl = () => {

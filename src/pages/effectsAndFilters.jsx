@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
 import AudioProcessor from "@/components/audioProcessor"; // adjust import path
 import API from "@/api";
-import SuccessModal from "@/components/SuccessModal";
+import SuccessModal from "@/components/successModal";
 import { useState } from "react";
 
 const RemixWorkspace = () => {
   const {
     effects,
-    setEffects,
     selectedCategory,
     toggleEffect,
     setSelectedCategory,
