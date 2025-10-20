@@ -1,8 +1,13 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import API from "../api" 
 
-const API_URL = "http://localhost:5000/api/auth"
+// Derive auth base from centralized API base. Keep fallback to localhost auth path.
+// Don't import API here to avoid circular dependency during module initialization.
+// Derive auth base from environment first, then fall back to the production host or localhost.
+const DEFAULT_API_HOST = "https://deployment-production-5b5d.up.railway.app";
+const API_BASE = import.meta.env.VITE_API_BASE || `${DEFAULT_API_HOST}/api`;
+const API_HOST = API_BASE.replace(/\/api\/?$/, '');
+const API_URL = `${API_HOST}/api/auth`;
 
 const useAuthStore = create(
   persist(

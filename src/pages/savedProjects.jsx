@@ -19,12 +19,14 @@ const SavedRemixesProjects = () => {
           .filter(a => a.isRemix)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+  const apiBase = API.defaults?.baseURL || (import.meta.env.VITE_API_BASE || 'http://localhost:5000/api');
+        const apiHost = apiBase.replace(/\/api\/?$/, '');
         const formatted = remixesOnly.map(a => ({
           id: a.id,
           title: a.title || `${a.originalName || "Untitled"} (Remix)`,
           isRemix: a.isRemix,
           artist: "@you",
-          streamUrl: `http://localhost:5000/api/audio/${a.id}/stream`,
+          streamUrl: `${apiHost}/api/audio/${a.id}/stream`,
           createdAt: a.createdAt,
         }));
 
