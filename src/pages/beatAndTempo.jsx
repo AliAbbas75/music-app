@@ -27,11 +27,12 @@ const BeatTempoControl = () => {
     if (lastTapRef.current) {
       const interval = now - lastTapRef.current;
       tapIntervals.current.push(interval);
-      if (tapIntervals.current.length > 5) tapIntervals.current.shift(); // Keep last 5 taps
+      if (tapIntervals.current.length > 5) tapIntervals.current.shift();
 
       const avgInterval =
         tapIntervals.current.reduce((a, b) => a + b, 0) /
         tapIntervals.current.length;
+
       const newBpm = Math.min(200, Math.max(60, Math.round(60000 / avgInterval)));
       setBpm(newBpm);
     }
@@ -47,74 +48,72 @@ const BeatTempoControl = () => {
   };
 
   return (
-    <div className="m-4 px-10 py-2">
-      <div className="w-full">
-        {/* Header */}
-        <Card className="my-4 px-2">
-          <h1 className="text-2xl font-semibold text-accent-foreground">
-            Beat & Tempo Control
-          </h1>
-        </Card>
+    <div className="px-4 sm:px-8 py-4 w-full mx-auto">
+      {/* Header */}
+      <Card className="my-4 px-3 py-2">
+        <h1 className="text-xl sm:text-2xl font-semibold text-accent-foreground">
+          Beat & Tempo Control
+        </h1>
+      </Card>
 
-        <div className="space-y-6">
-          {/* Current BPM Section */}
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Current BPM
-            </label>
-            <div className="relative">
-              <select
-                className="w-full px-4 py-3 pr-10 border rounded-xl bg-muted text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                value={`${bpm} BPM`}
-                onChange={handleBpmSelect}
-              >
-                {[60, 70, 80, 90, 100, 110, 120, 130, 140, 150].map((option) => (
-                  <option key={option} value={option}>
-                    {option} BPM
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-            </div>
-          </div>
-
-          {/* BPM Slider Section */}
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Adjust BPM ({bpm} BPM)
-            </label>
-            <input
-              type="range"
-              min={bpmRange[0]}
-              max={bpmRange[1]}
-              value={bpm}
-              onChange={handleSliderChange}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-600"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>{bpmRange[0]} BPM</span>
-              <span>{bpmRange[1]} BPM</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3 pt-4">
-            <Button
-              onClick={handleClear}
-              className="font-medium transition-colors rounded-full flex items-center py-2 px-6 gap-2"
+      <div className="space-y-6">
+        {/* Current BPM Section */}
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
+            Current BPM
+          </label>
+          <div className="relative">
+            <select
+              className="w-full px-3 py-3 pr-10 border rounded-xl bg-muted text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              value={`${bpm} BPM`}
+              onChange={handleBpmSelect}
             >
-              <X className="h-4 w-4" />
-              <span>Clear</span>
-            </Button>
-
-            <Button
-              onClick={handleTapTempo}
-              className="bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 py-2 px-6 gap-2 transition-colors flex items-center space-x-2 shadow-sm"
-            >
-              <Music className="h-4 w-4" />
-              <span>Tap Tempo</span>
-            </Button>
+              {[60, 70, 80, 90, 100, 110, 120, 130, 140, 150].map((option) => (
+                <option key={option} value={option}>
+                  {option} BPM
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
           </div>
+        </div>
+
+        {/* BPM Slider Section */}
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
+            Adjust BPM ({bpm} BPM)
+          </label>
+          <input
+            type="range"
+            min={bpmRange[0]}
+            max={bpmRange[1]}
+            value={bpm}
+            onChange={handleSliderChange}
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-600"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>{bpmRange[0]} BPM</span>
+            <span>{bpmRange[1]} BPM</span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 pt-4 justify-center sm:justify-start">
+          <Button
+            onClick={handleClear}
+            className="font-medium transition-colors rounded-full flex items-center py-2 px-5 gap-2 w-full sm:w-auto justify-center"
+          >
+            <X className="h-4 w-4" />
+            <span>Clear</span>
+          </Button>
+
+          <Button
+            onClick={handleTapTempo}
+            className="bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 py-2 px-5 gap-2 transition-colors flex items-center justify-center w-full sm:w-auto shadow-sm"
+          >
+            <Music className="h-4 w-4" />
+            <span>Tap Tempo</span>
+          </Button>
         </div>
       </div>
     </div>

@@ -37,16 +37,21 @@ function AppLayout() {
     <SidebarProvider>
       <AppSidebar className={"shadow-2xl"} />
       <SidebarInset>
-        <header className="flex h-20 bg-background items-center gap-2 border-b px-4 shadow-2xl w-full justify-between">
+        <header className="flex h-20 bg-background items-center gap-2 border-b px-4 shadow-2xl justify-between overflow-hidden">
           <SidebarTrigger />
-          <SearchForm className=" me-auto flex w-[60%] h-full items-center py-5" />
-          <Link to={"/profile/notifications"}>
-            <div className="size-10 rounded-full bg-background border flex items-center justify-center"><BellIcon className="text-muted-foreground" /></div>
+          <SearchForm className="hidden sm:flex me-auto w-[50%] lg:w-[60%] h-full items-center py-5" />
+          <Link to="/profile/notifications">
+            <div className="size-10 rounded-full bg-background border flex items-center justify-center">
+              <BellIcon className="text-muted-foreground" />
+            </div>
           </Link>
-          <AccountDropdown/>
-          <SignOutButton />
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <AccountDropdown />
+            <SignOutButton />
+            <ThemeToggle />
+          </div>
         </header>
+
 
         <Routes>
           <Route path="/" element={<Dashboard />} />
