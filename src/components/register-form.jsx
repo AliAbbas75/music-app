@@ -104,7 +104,7 @@ export function RegisterForm({ className, ...props }) {
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="text"
+                  type="password"
                   placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -117,7 +117,7 @@ export function RegisterForm({ className, ...props }) {
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
-                  type="text"
+                  type="password"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

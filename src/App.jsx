@@ -31,8 +31,10 @@ import useAudioStore from "./store/audioStore";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import AccountDropdown from "./components/accountDropdown";
+
 // Layout with Sidebar
 function AppLayout() {
+  
   return (
     <SidebarProvider>
       <AppSidebar className={"shadow-2xl"} />
