@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import useAudioStore from "@/store/audioStore";
 import API from "@/api"; // ✅ axios instance with auth headers
 import ProcessingModal from "@/components/processingModal";
+import { useNavigate } from "react-router-dom";
 
 const AIRemixGenerator = () => {
   const {
@@ -26,6 +27,9 @@ const AIRemixGenerator = () => {
   const setAudioFile = useAudioStore((state) => state.setAudioFile);
   const setUploadedAudio = useAudioStore((state) => state.setUploadedAudio);
   const [completed, setCompleted] = useState(false);
+  const [remixProgress, setRemixProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
+  const navigate = useNavigate();
 
   const styleOptions = [
     { id: "edm", label: "EDM" },
@@ -78,6 +82,8 @@ const AIRemixGenerator = () => {
 
   // ─── Create Remix ─────────────────────────────────────────────
 
+  // ─── Updated Frontend Handler with Progress Polling ─────────────
+
   const handleCreateRemix = async () => {
     try {
       if (!uploadedAudio?.audio.id) {
@@ -94,25 +100,93 @@ const AIRemixGenerator = () => {
 
       setCreatingRemix(true);
       setCompleted(false);
+      setRemixProgress(0);
+      setProgressMessage('Starting remix...');
 
       console.log(`🎵 Starting remix for fileId=${fileId}, style=${style}`);
 
-      // ✅ Send title in request body
+      // Start the remix job
       const res = await API.post(
         `/audio/${fileId}/remix`,
-        { title }, // 👈 send in body
-        { params: { style } } // still send style as query param
+        { title },
+        { params: { style } }
       );
 
-      console.log("✅ Remix created:", res.data);
+      console.log("✅ Remix job started:", res.data);
+      const jobId = res.data.job.jobId;
+      console.log("Job Id: ",res.data.job.jobId);
+      console.log("Job Id Variable: ", jobId);
+      // Poll for completion with progress updates
+      const result = await pollRemixProgress(jobId);
 
-      // mark as complete to trigger modal transition + redirect
+      console.log("✅ Remix completed:", result);
+      setCreatingRemix(false)
       setCompleted(true);
+      // Redirect to the completed audio page
+      navigate("/saved");
+
     } catch (error) {
       console.error("❌ Remix creation failed:", error);
-      alert("Remix creation failed. Check console for details.");
+      alert(`Remix failed: ${error.message}`);
       setCreatingRemix(false);
+      setRemixProgress(0);
     }
+  };
+
+
+
+  const pollRemixProgress = async (jobId) => {
+    let attempts = 0;
+    const maxAttempts = 120; // 10 minutes timeout
+    const pollInterval = 10000; // 10 seconds
+
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        attempts++;
+
+        try {
+          // Check job status
+          const response = await API.get(`/audio/remix-job/${jobId}/status`);
+          console.log("Status endpoint reached: ", response.data);
+          const status = response.data;
+
+          console.log(`📊 Poll ${attempts}: ${status.status} - ${status.progress}%`);
+
+          // Update progress state
+          if (status.progress !== undefined) {
+            setRemixProgress(status.progress);
+          }
+          if (status.progressMessage) {
+            setProgressMessage(status.progressMessage);
+          }
+
+          // Check if completed
+          if (status.status === 'completed') {
+            clearInterval(interval);
+            setRemixProgress(100);
+            setProgressMessage('Remix completed!');
+            resolve(status);
+          }
+
+          // Check if failed
+          if (status.status === 'failed') {
+            clearInterval(interval);
+            reject(new Error(status.error || 'Remix failed'));
+          }
+
+          // Timeout
+          if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            reject(new Error('Remix timed out after 10 minutes'));
+          }
+
+        } catch (error) {
+          console.error('❌ Polling error:', error);
+          clearInterval(interval);
+          reject(error);
+        }
+      }, pollInterval);
+    });
   };
 
 
@@ -265,7 +339,12 @@ const AIRemixGenerator = () => {
           </div>
 
           {creatingRemix && (
-            <ProcessingModal completed={completed} />
+            <div>
+              <ProcessingModal completed={completed}/>
+              
+            </div>
+            
+
           )}
         </div>
       </div>
