@@ -6,6 +6,7 @@ const SavedRemixesProjects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [playingId, setPlayingId] = useState(null);
+  const [loadingId, setLoadingId] = useState(null); // 🔥 Spinner control
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -14,7 +15,7 @@ const SavedRemixesProjects = () => {
         const res = await API.get("/audio/user");
 
         const remixesOnly = res.data
-          .filter(a => a.isRemix)
+          .filter((a) => a.isRemix)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const apiBase =
@@ -24,7 +25,7 @@ const SavedRemixesProjects = () => {
 
         const apiHost = apiBase.replace(/\/api\/?$/, "");
 
-        const formatted = remixesOnly.map(a => ({
+        const formatted = remixesOnly.map((a) => ({
           id: a.id,
           title: a.title || `${a.originalName || "Untitled"} (Remix)`,
           isRemix: a.isRemix,
@@ -42,35 +43,56 @@ const SavedRemixesProjects = () => {
     };
 
     fetchAudioFiles();
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
   const handlePlay = async (projectId) => {
     try {
-      const project = projects.find(p => p.id === projectId);
+      const project = projects.find((p) => p.id === projectId);
 
+      // If the same song is playing — pause it
       if (playingId === projectId && audioRef.current) {
         audioRef.current.pause();
         setPlayingId(null);
         return;
       }
 
+      // Stop previous song if another is playing
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
+
+      // 🔥 Show spinner while fetching audio blob
+      setLoadingId(projectId);
 
       const res = await API.get(project.streamUrl, { responseType: "blob" });
       const blobUrl = URL.createObjectURL(res.data);
 
       const audio = new Audio(blobUrl);
       audioRef.current = audio;
+
+      // After fetch, stop spinner and start playback
+      setLoadingId(null);
       setPlayingId(projectId);
 
       audio.play();
 
+      // Cleanup on end
       audio.onended = () => setPlayingId(null);
+      audio.onerror = () => {
+        console.error("Audio error");
+        setPlayingId(null);
+      };
     } catch (err) {
       console.error("Audio playback error:", err);
+      setLoadingId(null);
     }
   };
 
@@ -123,17 +145,20 @@ const SavedRemixesProjects = () => {
               </div>
             </div>
 
-            {/* Play/Pause Button */}
+            {/* Play/Pause/Spinner Button */}
             <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 ml-3">
               <button
                 onClick={() => handlePlay(project.id)}
+                disabled={loadingId === project.id}
                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors duration-200 shadow-md ${
                   playingId === project.id
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
                 }`}
               >
-                {playingId === project.id ? (
+                {loadingId === project.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : playingId === project.id ? (
                   <Pause className="w-4 h-4" fill="currentColor" />
                 ) : (
                   <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
