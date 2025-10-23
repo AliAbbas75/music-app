@@ -31,10 +31,11 @@ import useAudioStore from "./store/audioStore";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import AccountDropdown from "./components/accountDropdown";
+import useAuthStore from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 
 // Layout with Sidebar
 function AppLayout() {
-  
   return (
     <SidebarProvider>
       <AppSidebar className={"shadow-2xl"} />
@@ -54,7 +55,6 @@ function AppLayout() {
           </div>
         </header>
 
-
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -69,42 +69,73 @@ function AppLayout() {
             <Route path="notifications" element={<Notifications />} />
             <Route path="appearance" element={<AppearanceSettings />} />
           </Route>
-
         </Routes>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
 
-// Top-level routing
+// ─────────────────────────────
+// Top-level App
+// ─────────────────────────────
 export default function App() {
-  const { theme, setTheme } = useThemeStore()
+  const { theme, setTheme } = useThemeStore();
   const { setAudioFile, setIsPlaying } = useAudioStore();
+  const { token, logout, tokenExpiry } = useAuthStore(); // ✅ track auth state
+  const navigate = useNavigate();
 
+  // Clear non-serializable file data on reload
   useEffect(() => {
-    // Clear non-serializable file data on reload
     setAudioFile(null);
     setIsPlaying(false);
   }, [setAudioFile, setIsPlaying]);
 
-  // when app mounts, apply stored theme
+  // Apply stored theme
   useEffect(() => {
-    setTheme(theme)
-  }, [theme, setTheme])
+    setTheme(theme);
+  }, [theme, setTheme]);
+
+  // ✅ Auto logout when token expires
+  useEffect(() => {
+    if (!token || !tokenExpiry) return;
+
+    const now = Date.now();
+    const remaining = tokenExpiry - now;
+
+    if (remaining <= 0) {
+      // already expired
+      logout();
+      navigate("/login");
+      return;
+    }
+
+    // Set timeout for automatic logout
+    const timeout = setTimeout(() => {
+      console.log("⏰ Token expired — auto logging out user.");
+      logout();
+      navigate("/login");
+    }, remaining);
+
+    return () => clearTimeout(timeout);
+  }, [token, tokenExpiry, logout, navigate]);
+
   return (
     <Routes>
-      {/* Auth route with NO sidebar */}
+      {/* Public auth routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-      {/* Everything else uses sidebar */}
-      <Route path="/*" element={
-        <ProtectedRoute>
-          <AppLayout />
-        </ProtectedRoute>
-      } />
+      {/* Protected routes */}
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
-  )
+  );
 }

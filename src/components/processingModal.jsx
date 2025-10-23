@@ -23,7 +23,7 @@ const ProcessingModal = ({ completed }) => {
     if (completed) return; // stop when done
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 95 ? prev : prev + Math.random() * 3));
-    }, 60000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [completed]);
 
