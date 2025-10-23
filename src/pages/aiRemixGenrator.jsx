@@ -24,6 +24,7 @@ const AIRemixGenerator = () => {
 
   const [loading, setLoading] = useState(false);
   const [creatingRemix, setCreatingRemix] = useState(false);
+  const [uploading, setUploading] = useState(false); // ✅ new state
   const setAudioFile = useAudioStore((state) => state.setAudioFile);
   const setUploadedAudio = useAudioStore((state) => state.setUploadedAudio);
   const [completed, setCompleted] = useState(false);
@@ -52,38 +53,36 @@ const AIRemixGenerator = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // ✅ Update store with local file reference (for waveform, playback, etc.)
     setAudioFile(file);
-
-    // Reset input so the same file can be re-uploaded
     e.target.value = "";
 
-    // Log details
     console.log("🎵 Selected file:", { name: file.name, type: file.type, size: file.size });
 
-    // ✅ Upload to backend
     try {
+      setUploading(true); // ✅ show uploading modal
+
       const formData = new FormData();
       formData.append("audio", file);
 
       const res = await API.post("/audio/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log(`Upload progress: ${percent}%`);
+        },
       });
 
       console.log("✅ Upload success:", res.data.audio);
-
-      // ✅ Save backend info (fileId, path, etc.)
       setUploadedAudio(res.data);
     } catch (err) {
       console.error("❌ Upload failed:", err);
       alert("Upload failed. Check backend logs.");
+    } finally {
+      setUploading(false); // ✅ hide uploading modal
     }
   };
 
   // ─── Create Remix ─────────────────────────────────────────────
-
-  // ─── Updated Frontend Handler with Progress Polling ─────────────
-
   const handleCreateRemix = async () => {
     try {
       if (!uploadedAudio?.audio.id) {
@@ -105,7 +104,6 @@ const AIRemixGenerator = () => {
 
       console.log(`🎵 Starting remix for fileId=${fileId}, style=${style}`);
 
-      // Start the remix job
       const res = await API.post(
         `/audio/${fileId}/remix`,
         { title },
@@ -114,17 +112,13 @@ const AIRemixGenerator = () => {
 
       console.log("✅ Remix job started:", res.data);
       const jobId = res.data.job.jobId;
-      console.log("Job Id: ",res.data.job.jobId);
-      console.log("Job Id Variable: ", jobId);
-      // Poll for completion with progress updates
+
       const result = await pollRemixProgress(jobId);
 
       console.log("✅ Remix completed:", result);
-      setCreatingRemix(false)
+      setCreatingRemix(false);
       setCompleted(true);
-      // Redirect to the completed audio page
       navigate("/saved");
-
     } catch (error) {
       console.error("❌ Remix creation failed:", error);
       alert(`Remix failed: ${error.message}`);
@@ -133,34 +127,24 @@ const AIRemixGenerator = () => {
     }
   };
 
-
-
   const pollRemixProgress = async (jobId) => {
     let attempts = 0;
-    const maxAttempts = 120; // 10 minutes timeout
-    const pollInterval = 10000; // 10 seconds
+    const maxAttempts = 120;
+    const pollInterval = 10000;
 
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
         attempts++;
 
         try {
-          // Check job status
           const response = await API.get(`/audio/remix-job/${jobId}/status`);
-          console.log("Status endpoint reached: ", response.data);
           const status = response.data;
 
           console.log(`📊 Poll ${attempts}: ${status.status} - ${status.progress}%`);
 
-          // Update progress state
-          if (status.progress !== undefined) {
-            setRemixProgress(status.progress);
-          }
-          if (status.progressMessage) {
-            setProgressMessage(status.progressMessage);
-          }
+          if (status.progress !== undefined) setRemixProgress(status.progress);
+          if (status.progressMessage) setProgressMessage(status.progressMessage);
 
-          // Check if completed
           if (status.status === 'completed') {
             clearInterval(interval);
             setRemixProgress(100);
@@ -168,13 +152,11 @@ const AIRemixGenerator = () => {
             resolve(status);
           }
 
-          // Check if failed
           if (status.status === 'failed') {
             clearInterval(interval);
             reject(new Error(status.error || 'Remix failed'));
           }
 
-          // Timeout
           if (attempts >= maxAttempts) {
             clearInterval(interval);
             reject(new Error('Remix timed out after 10 minutes'));
@@ -188,7 +170,6 @@ const AIRemixGenerator = () => {
       }, pollInterval);
     });
   };
-
 
   // ─── Render ──────────────────────────────────────────────────
   return (
@@ -338,13 +319,18 @@ const AIRemixGenerator = () => {
             </Button>
           </div>
 
-          {creatingRemix && (
-            <div>
-              <ProcessingModal completed={completed}/>
-              
-            </div>
-            
+          {creatingRemix && <ProcessingModal completed={completed} />}
 
+          {/* ✅ Uploading Modal */}
+          {uploading && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 flex flex-col items-center space-y-3 shadow-xl">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                <p className="text-sm font-medium text-muted-foreground">
+                  Uploading audio file...
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </div>
